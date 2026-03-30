@@ -1,466 +1,182 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 Admin Licences - ManagerPresence</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            color: #fff;
-            padding: 20px;
-        }
-        
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-        }
-        
-        header h1 { font-size: 2em; margin-bottom: 10px; }
-        
-        .config-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .config-bar input[type="text"] {
-            flex: 1;
-            min-width: 200px;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 14px;
-        }
-        
-        .config-bar input::placeholder { color: rgba(255,255,255,0.5); }
-        
-        .config-bar button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            background: #4CAF50;
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .config-bar button:hover { background: #45a049; }
-        
-        /* Groupe token + œil */
-        .token-group {
-            display: flex;
-            flex: 1;
-            min-width: 200px;
-            gap: 0;
-        }
-        
-        .token-group input {
-            flex: 1;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 8px 0 0 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 14px;
-            font-family: monospace;
-        }
-        
-        .token-group button {
-            padding: 12px 16px;
-            background: rgba(255,255,255,0.15);
-            border: none;
-            border-radius: 0 8px 8px 0;
-            color: #fff;
-            cursor: pointer;
-            font-size: 18px;
-            min-width: 48px;
-        }
-        
-        .token-group button:hover { background: rgba(255,255,255,0.3); }
-        
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        
-        .tab {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px 8px 0 0;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .tab.active {
-            background: rgba(255,255,255,0.2);
-            border-bottom: 3px solid #4CAF50;
-        }
-        
-        .panel {
-            display: none;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 24px;
-        }
-        
-        .panel.active { display: block; }
-        
-        .section { margin-bottom: 24px; }
-        .section h3 { margin-bottom: 16px; color: #4CAF50; font-size: 1.2em; }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 16px;
-        }
-        
-        .card {
-            background: rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 16px;
-            transition: all 0.3s;
-        }
-        
-        .card:hover { background: rgba(255,255,255,0.12); }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .card-title { font-weight: bold; font-size: 1.1em; }
-        
-        .badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .badge.trial { background: #FF9800; }
-        .badge.standard { background: #2196F3; }
-        .badge.premium { background: #9C27B0; }
-        .badge.active { background: #4CAF50; }
-        .badge.expired { background: #f44336; }
-        .badge.unused { background: #4CAF50; }
-        .badge.used { background: #9e9e9e; }
-        
-        .card-info { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 12px; }
-        .card-info span { display: block; margin-bottom: 4px; }
-        
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        
-        .btn-primary { background: #4CAF50; color: #fff; }
-        .btn-secondary { background: rgba(255,255,255,0.2); color: #fff; }
-        .btn:hover { opacity: 0.8; }
-        
-        .generate-section {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        select {
-            padding: 12px 16px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            font-size: 14px;
-            min-width: 200px;
-        }
-        
-        select option { background: #1a1a2e; color: #fff; }
-        
-        .code-display {
-            background: rgba(0,0,0,0.3);
-            padding: 16px 24px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 1.5em;
-            letter-spacing: 2px;
-            color: #4CAF50;
-            text-align: center;
-            margin: 16px 0;
-            cursor: pointer;
-        }
-        
-        .code-display.copied { background: #4CAF50; color: #fff; }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .stat-card {
-            background: rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .stat-value { font-size: 2em; font-weight: bold; color: #4CAF50; }
-        .stat-label { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 4px; }
-        
-        .search-bar { margin-bottom: 16px; }
-        .search-bar input {
-            width: 100%;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: rgba(255,255,255,0.5);
-        }
-        
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-overlay.active { display: flex; }
-        
-        .modal {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
-        }
-        
-        .modal h2 { margin-bottom: 20px; color: #4CAF50; }
-        
-        .modal-field { margin-bottom: 16px; }
-        .modal-field label {
-            display: block;
-            margin-bottom: 8px;
-            color: rgba(255,255,255,0.8);
-        }
-        
-        .modal-field input, .modal-field select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 24px;
-        }
-        
-        /* Zone de progression */
-        .progress-zone {
-            display: none;
-            background: rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .progress-zone.active { display: block; }
-        
-        .progress-icon { font-size: 3em; margin-bottom: 16px; }
-        .progress-title { font-size: 1.5em; margin-bottom: 10px; }
-        .progress-msg { color: rgba(255,255,255,0.6); margin-bottom: 20px; }
-        
-        .progress-bar-container {
-            height: 6px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: #4CAF50;
-            width: 0%;
-            transition: width 0.5s ease-out;
-        }
-        
-        @media (max-width: 600px) {
-            .config-bar, .generate-section { flex-direction: column; }
-            .generate-section select, .generate-section button { width: 100%; }
-            .token-group { min-width: 100%; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>🔐 Admin Licences</h1>
-            <p>ManagerPresence - Gestion des licences et codes d'activation</p>
-        </header>
-        
-        <div class="config-bar">
-            <input type="text" id="serverUrl" placeholder="URL du serveur" value="https://managerpresence-server.onrender.com">
-            <div class="token-group">
-                <input type="password" id="adminToken" placeholder="Token admin">
-                <button type="button" id="tokenEyeBtn" title="Afficher/masquer le token" onclick="toggleToken()">👁</button>
-            </div>
-            <button id="btnConnecter" onclick="connecter()">🔗 Connecter</button>
-        </div>
-        
-        <!-- Zone de progression connexion -->
-        <div id="progressZone" class="progress-zone">
-            <div id="progressIcon" class="progress-icon">⏳</div>
-            <h2 id="progressTitle" class="progress-title">Connexion en cours...</h2>
-            <p id="progressMsg" class="progress-msg">Le serveur peut prendre jusqu'à 60 secondes à démarrer s'il était en veille.</p>
-            <div class="progress-bar-container">
-                <div id="progressBar" class="progress-bar"></div>
-            </div>
-            <button id="btnReessayer" class="btn btn-primary" style="display:none;" onclick="connecter()">🔄 Réessayer</button>
-        </div>
-        
-        <!-- Écran de connexion initial -->
-        <div id="loginPrompt" class="panel active" style="text-align: center; padding: 60px;">
-            <div style="font-size: 4em; margin-bottom: 20px;">🔒</div>
-            <h2>Connexion requise</h2>
-            <p style="color: rgba(255,255,255,0.6); margin-top: 10px;">Entrez l'URL et le token admin.</p>
-        </div>
-        
-        <!-- Contenu principal (caché tant que non connecté) -->
-        <div id="content" style="display: none;">
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
-                <button class="tab" onclick="showTab('licences')">📜 Licences</button>
-                <button class="tab" onclick="showTab('codes')">🎟️ Codes</button>
-                <button class="tab" onclick="showTab('generate')">➕ Générer</button>
-            </div>
-            
-            <div id="dashboard" class="panel active">
-                <div class="stats">
-                    <div class="stat-card"><div class="stat-value" id="totalLicences">-</div><div class="stat-label">Licences</div></div>
-                    <div class="stat-card"><div class="stat-value" id="activeLicences">-</div><div class="stat-label">Actives</div></div>
-                    <div class="stat-card"><div class="stat-value" id="trialLicences">-</div><div class="stat-label">Essai</div></div>
-                    <div class="stat-card"><div class="stat-value" id="premiumLicences">-</div><div class="stat-label">Premium</div></div>
-                    <div class="stat-card"><div class="stat-value" id="totalCodes">-</div><div class="stat-label">Codes</div></div>
-                    <div class="stat-card"><div class="stat-value" id="unusedCodes">-</div><div class="stat-label">Disponibles</div></div>
-                </div>
-                <div class="section">
-                    <h3>⚠️ Expirent bientôt</h3>
-                    <div id="expiringLicences" class="grid"></div>
-                </div>
-            </div>
-            
-            <div id="licences" class="panel">
-                <div class="search-bar">
-                    <input type="text" id="searchLicences" placeholder="🔍 Rechercher..." oninput="filterLicences()">
-                </div>
-                <div id="licencesList" class="grid"></div>
-            </div>
-            
-            <div id="codes" class="panel">
-                <div class="search-bar">
-                    <input type="text" id="searchCodes" placeholder="🔍 Rechercher..." oninput="filterCodes()">
-                </div>
-                <div id="codesList" class="grid"></div>
-            </div>
-            
-            <div id="generate" class="panel">
-                <div class="section">
-                    <h3>🎟️ Générer un code</h3>
-                    <div class="generate-section">
-                        <select id="codeType">
-                            <option value="PREMIUM_PERMANENT">🌟 Premium Permanent (100 ans)</option>
-                            <option value="PREMIUM_1AN">⭐ Premium 1 an</option>
-                            <option value="STANDARD_1AN">📘 Standard 1 an</option>
-                            <option value="PROLONGATION_60J">⏰ Prolongation 60j</option>
-                            <option value="PROLONGATION_30J">⏰ Prolongation 30j</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="genererCode()">✨ Générer</button>
-                    </div>
-                    <div id="generatedCode" style="display: none;">
-                        <div class="code-display" onclick="copierCode(this)"><span id="codeValue"></span></div>
-                        <p style="text-align: center; color: rgba(255,255,255,0.6);">Cliquez pour copier</p>
-                    </div>
-                </div>
-                <div class="section">
-                    <h3>📋 Derniers codes</h3>
-                    <div id="recentCodes" class="grid"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal modification -->
-    <div id="editModal" class="modal-overlay">
-        <div class="modal">
-            <h2>✏️ Modifier la licence</h2>
-            <div class="modal-field">
-                <label>Structure</label>
-                <input type="text" id="editProjectId" readonly style="opacity: 0.7;">
-            </div>
-            <div class="modal-field">
-                <label>Nom</label>
-                <input type="text" id="editNomStructure" placeholder="Nom affiché">
-            </div>
-            <div class="modal-field">
-                <label>Type de licence</label>
-                <select id="editPlan">
-                    <option value="trial">⏳ Trial</option>
-                    <option value="standard">📘 Standard</option>
-                    <option value="premium">🌟 Premium</option>
-                </select>
-            </div>
-            <div class="modal-field">
-                <label>Durée (jours)</label>
-                <input type="number" id="editDuree" min="1" max="36500" value="365">
-            </div>
-            <div class="modal-field">
-                <label>Max cadres</label>
-                <input type="number" id="editMaxCadres" min="1" max="999" value="999">
-            </div>
-            <div id="editStatus" style="margin-top: 12px;"></div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="fermerModal()">Annuler</button>
-                <button id="btnSauvegarder" class="btn btn-primary" onclick="sauvegarderLicence()">💾 Sauvegarder</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE>&eth;&Yuml;&rdquo;&#65424; Admin Licences - ManagerPresence</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice 4.1.16  (Win32)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGED" CONTENT="20260330;9080679">
+	<META NAME="" CONTENT="">
+	<META NAME="viewport" CONTENT="width=device-width, initial-scale=1.0">
+	<STYLE TYPE="text/css">
+	<!--
+		P { color: #ffffff; font-family: "apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", sans-serif }
+		H1 { color: #ffffff }
+		H2 { color: #ffffff }
+		H2.cjk { font-family: "SimSun" }
+		H2.ctl { font-family: "Arial" }
+		H2.progress-title-western { margin-bottom: 0.26cm }
+		H2.progress-title-cjk { margin-bottom: 0.26cm; font-family: "SimSun" }
+		H2.progress-title-ctl { margin-bottom: 0.26cm; font-family: "Arial" }
+		P.progress-msg { margin-bottom: 0.53cm; font-family: "apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", sans-serif }
+		H3 { color: #ffffff }
+		H3.cjk { font-family: "SimSun" }
+		H3.ctl { font-family: "Arial" }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="fr-FR" TEXT="#ffffff" DIR="LTR" STYLE="border: none; padding: 0cm">
+<H1>&eth;&Yuml;&rdquo;<FONT FACE="HG Mincho Light J"><SPAN LANG="zh-CN">&#65424;
+</SPAN></FONT>Admin Licences</H1>
+<P>ManagerPresence - Gestion des licences et codes d'activation</P>
+<P STYLE="margin-bottom: 0.53cm">&eth;&Yuml;&lsquo;<SPAN LANG="zh-CN">&#65409;
+</SPAN>
+</P>
+<P STYLE="margin-bottom: 0.53cm">&eth;&Yuml;&rdquo;&mdash; Connecter 
+</P>
+<DIV ID="progressZone" DIR="LTR">
+	<P ALIGN=CENTER STYLE="margin-bottom: 0.53cm; border: none; padding: 0cm">
+	<!-- Zone de progression connexion --></P>
+	<DIV ID="progressIcon" DIR="LTR">
+		<P ALIGN=CENTER STYLE="margin-bottom: 0.42cm; border: none; padding: 0cm">
+		&acirc;<SPAN LANG="zh-CN">&#65423;</SPAN>&sup3;</P>
+	</DIV>
+	<H2 CLASS="progress-title-western" ALIGN=CENTER STYLE="margin-top: 0cm; margin-bottom: 0.53cm; border: none; padding: 0cm"><A NAME="progressTitle"></A>
+	Connexion en cours...</H2>
+	<P CLASS="progress-msg" ALIGN=CENTER STYLE="border: none; padding: 0cm"><A NAME="progressMsg"></A>
+	Le serveur peut prendre jusqu'&Atilde;&nbsp; 60 secondes &Atilde;&nbsp;
+	d&Atilde;&copy;marrer s'il &Atilde;&copy;tait en veille.</P>
+	<DIV ID="progressBar" DIR="LTR" STYLE="background: #4caf50">
+		<P ALIGN=CENTER STYLE="margin-bottom: 0.53cm; border: none; padding: 0cm">
+		<BR><BR>
+		</P>
+	</DIV>
+	<P ALIGN=CENTER STYLE="margin-bottom: 0.53cm; border: none; padding: 0cm">
+	&eth;&Yuml;&rdquo;&bdquo; R&Atilde;&copy;essayer 
+	</P>
+</DIV>
+<DIV ID="loginPrompt" DIR="LTR">
+	<P ALIGN=CENTER STYLE="margin-bottom: 0.53cm; border: none; padding: 0cm">
+	<!-- Écran de connexion initial -->&eth;&Yuml;&rdquo;&rsquo;</P>
+	<H2 CLASS="western" ALIGN=CENTER STYLE="border: none; padding: 0cm">Connexion
+	requise</H2>
+	<P ALIGN=CENTER STYLE="margin-top: 0.26cm; border: none; padding: 0cm">
+	Entrez l'URL et le token admin.</P>
+</DIV>
+<DIV ID="content" DIR="LTR">
+	<P STYLE="margin-bottom: 0.53cm"><!-- Contenu principal (caché tant que non connecté) -->&eth;&Yuml;&ldquo;&Scaron;
+	Dashboard &eth;&Yuml;&ldquo;&oelig; Licences &eth;&Yuml;�&Yuml;&iuml;&cedil;<SPAN LANG="zh-CN">&#65423;
+	</SPAN>Codes &acirc;�&bull; G&Atilde;&copy;n&Atilde;&copy;rer 
+	</P>
+	<DIV ID="dashboard" DIR="LTR">
+		<P ALIGN=CENTER STYLE="margin-bottom: 0.64cm; border: none; padding: 0cm">
+		<BR><BR>
+		</P>
+		<DIV ID="totalLicences" DIR="LTR">
+			<P ALIGN=CENTER STYLE="margin-bottom: 0.64cm; border: none; padding: 0cm">
+			<FONT COLOR="#4caf50"><B>-</B></FONT></P>
+		</DIV>
+		<P ALIGN=CENTER STYLE="margin-top: 0.11cm; margin-bottom: 0.64cm; border: none; padding: 0cm">
+		<FONT SIZE=2 STYLE="font-size: 9pt">Licences</FONT></P>
+		<DIV ID="activeLicences" DIR="LTR">
+			<P STYLE="margin-bottom: 0.64cm"><FONT COLOR="#4caf50"><B>-</B></FONT></P>
+		</DIV>
+		<P ALIGN=CENTER STYLE="margin-top: 0.11cm; margin-bottom: 0.64cm; border: none; padding: 0cm">
+		<FONT SIZE=2 STYLE="font-size: 9pt">Actives</FONT></P>
+		<DIV ID="trialLicences" DIR="LTR">
+			<P STYLE="margin-bottom: 0.64cm"><FONT COLOR="#4caf50"><B>-</B></FONT></P>
+		</DIV>
+		<P ALIGN=CENTER STYLE="margin-top: 0.11cm; margin-bottom: 0.64cm; border: none; padding: 0cm">
+		<FONT SIZE=2 STYLE="font-size: 9pt">Essai</FONT></P>
+		<DIV ID="premiumLicences" DIR="LTR">
+			<P STYLE="margin-bottom: 0.64cm"><FONT COLOR="#4caf50"><B>-</B></FONT></P>
+		</DIV>
+		<P ALIGN=CENTER STYLE="margin-top: 0.11cm; margin-bottom: 0.64cm; border: none; padding: 0cm">
+		<FONT SIZE=2 STYLE="font-size: 9pt">Premium</FONT></P>
+		<DIV ID="totalCodes" DIR="LTR">
+			<P STYLE="margin-bottom: 0.64cm"><FONT COLOR="#4caf50"><B>-</B></FONT></P>
+		</DIV>
+		<P ALIGN=CENTER STYLE="margin-top: 0.11cm; margin-bottom: 0.64cm; border: none; padding: 0cm">
+		<FONT SIZE=2 STYLE="font-size: 9pt">Codes</FONT></P>
+		<DIV ID="unusedCodes" DIR="LTR">
+			<P STYLE="margin-bottom: 0.64cm"><FONT COLOR="#4caf50"><B>-</B></FONT></P>
+		</DIV>
+		<P ALIGN=CENTER STYLE="margin-top: 0.11cm; margin-bottom: 0.64cm; border: none; padding: 0cm">
+		<FONT SIZE=2 STYLE="font-size: 9pt">Disponibles</FONT></P>
+		<H3 CLASS="western" STYLE="margin-top: 0cm; margin-bottom: 0.64cm">&acirc;&scaron;&nbsp;&iuml;&cedil;<FONT FACE="SimSun"><SPAN LANG="zh-CN">&#65423;
+		</SPAN></FONT>Expirent bient&Atilde;&acute;t</H3>
+		<DIV ID="expiringLicences" DIR="LTR">
+			<P STYLE="margin-bottom: 0.64cm"><BR><BR>
+			</P>
+		</DIV>
+	</DIV>
+	<DIV ID="licences" DIR="LTR">
+		<P STYLE="margin-bottom: 0cm; border: none; padding: 0cm"><BR>
+		</P>
+		<DIV ID="licencesList" DIR="LTR">
+			<P STYLE="margin-bottom: 0cm; border: none; padding: 0cm"><BR>
+			</P>
+		</DIV>
+	</DIV>
+	<DIV ID="codes" DIR="LTR">
+		<P STYLE="margin-bottom: 0cm; border: none; padding: 0cm"><BR>
+		</P>
+		<DIV ID="codesList" DIR="LTR">
+			<P STYLE="margin-bottom: 0cm; border: none; padding: 0cm"><BR>
+			</P>
+		</DIV>
+	</DIV>
+	<DIV ID="generate" DIR="LTR">
+		<H3 CLASS="western" STYLE="margin-top: 0cm; margin-bottom: 0.64cm; border: none; padding: 0cm">
+		&eth;&Yuml;�&Yuml;&iuml;&cedil;<FONT FACE="SimSun"><SPAN LANG="zh-CN">&#65423;
+		</SPAN></FONT>G&Atilde;&copy;n&Atilde;&copy;rer un code</H3>
+		<P STYLE="margin-bottom: 0.64cm; border: none; padding: 0cm">&eth;&Yuml;&OElig;&Yuml;
+		Premium Permanent (100 ans) &acirc;&shy;<SPAN LANG="zh-CN">&#65424;
+		</SPAN>Premium 1 an &eth;&Yuml;&ldquo;&tilde; Standard 1 an &acirc;<SPAN LANG="zh-CN">&#65423;</SPAN>&deg;
+		Prolongation 60j &acirc;<SPAN LANG="zh-CN">&#65423;</SPAN>&deg;
+		Prolongation 30j &acirc;&oelig;&uml; G&Atilde;&copy;n&Atilde;&copy;rer
+				</P>
+		<DIV ID="generatedCode" DIR="LTR">
+			<P ALIGN=CENTER STYLE="margin-left: 0.42cm; margin-right: 0.42cm; margin-bottom: 0.64cm; border: none; padding: 0cm"><A NAME="codeValue"></A>
+			Cliquez pour copier</P>
+		</DIV>
+		<H3 CLASS="western" STYLE="margin-top: 0cm; margin-bottom: 0.64cm; border: none; padding: 0cm">
+		&eth;&Yuml;&ldquo;&lsaquo; Derniers codes</H3>
+		<DIV ID="recentCodes" DIR="LTR">
+			<P STYLE="margin-bottom: 0.64cm; border: none; padding: 0cm"><BR><BR>
+			</P>
+		</DIV>
+	</DIV>
+</DIV>
+<DIV ID="editModal" DIR="LTR">
+	<H2 CLASS="western" STYLE="border: none; padding: 0cm"><SPAN STYLE="background: #1a1a2e"><!-- Modal modification -->&acirc;&oelig;<FONT FACE="SimSun"><SPAN LANG="zh-CN">&#65423;</SPAN></FONT>&iuml;&cedil;<FONT FACE="SimSun"><SPAN LANG="zh-CN">&#65423;
+	</SPAN></FONT>Modifier la licence</SPAN></H2>
+	<P STYLE="margin-bottom: 0.42cm; border: none; padding: 0cm"><SPAN STYLE="background: #1a1a2e">Structure
+	</SPAN>
+	</P>
+	<P STYLE="margin-bottom: 0.42cm; border: none; padding: 0cm"><SPAN STYLE="background: #1a1a2e">Nom
+	</SPAN>
+	</P>
+	<P STYLE="margin-bottom: 0.42cm; border: none; padding: 0cm"><SPAN STYLE="background: #1a1a2e">Type
+	de licence &acirc;<SPAN LANG="zh-CN">&#65423;</SPAN>&sup3; Trial
+	&eth;&Yuml;&ldquo;&tilde; Standard &eth;&Yuml;&OElig;&Yuml; Premium 
+	</SPAN>
+	</P>
+	<P STYLE="margin-bottom: 0.42cm; border: none; padding: 0cm"><SPAN STYLE="background: #1a1a2e">Dur&Atilde;&copy;e
+	(jours) </SPAN>
+	</P>
+	<P STYLE="margin-bottom: 0.42cm; border: none; padding: 0cm"><SPAN STYLE="background: #1a1a2e">Max
+	cadres </SPAN>
+	</P>
+	<DIV ID="editStatus" DIR="LTR">
+		<P STYLE="margin-bottom: 0cm; border: none; padding: 0cm"><BR>
+		</P>
+	</DIV>
+	<P STYLE="margin-top: 0.64cm; border: none; padding: 0cm"><SPAN STYLE="background: #1a1a2e">Annuler
+	&eth;&Yuml;&rsquo;&frac34; Sauvegarder </SPAN>
+	</P>
+</DIV>
+<P STYLE="margin-bottom: 0cm"><SCRIPT>
         let serverUrl = '', adminToken = '', allLicences = [], allCodes = [], currentEditLicence = null;
         let progressTimer = null;
 
@@ -494,7 +210,7 @@
                 btn.textContent = '🙈';
             } else {
                 input.type = 'password';
-                btn.textContent = '👁';
+                btn.textContent = '�?';
             }
         }
 
@@ -535,7 +251,7 @@
             
             // Reset et afficher la barre de progression
             setProgressBar(0);
-            showProgress('⏳', 'Connexion en cours...', 'Le serveur peut prendre jusqu\'à 60 secondes à démarrer s\'il était en veille.', true, false);
+            showProgress('�?�', 'Connexion en cours...', 'Le serveur peut prendre jusqu\'à 60 secondes à démarrer s\'il était en veille.', true, false);
             
             // Animation de la barre de progression
             let pct = 0;
@@ -553,7 +269,7 @@
 
                 if (r.status === 401) {
                     setProgressBar(100);
-                    showProgress('❌', 'Token invalide', 'Vérifiez votre token admin.', false, true);
+                    showProgress('�?�', 'Token invalide', 'Vérifiez votre token admin.', false, true);
                     document.getElementById('progressBar').style.background = '#f44336';
                     return;
                 }
@@ -578,7 +294,7 @@
                 if (progressTimer) clearInterval(progressTimer);
                 setProgressBar(100);
                 document.getElementById('progressBar').style.background = '#f44336';
-                showProgress('❌', 'Erreur de connexion', e.message, false, true);
+                showProgress('�?�', 'Erreur de connexion', e.message, false, true);
             }
         }
 
@@ -600,11 +316,11 @@
             document.getElementById('totalCodes').textContent = allCodes.length;
             document.getElementById('unusedCodes').textContent = allCodes.filter(c => !c.utilise).length;
             const exp = allLicences.filter(l => l.actif && l.joursRestants <= 7 && l.joursRestants > 0);
-            document.getElementById('expiringLicences').innerHTML = exp.length ? exp.map(l => createLicenceCard(l)).join('') : '<div class="empty-state"><p>Aucune 👍</p></div>';
+            document.getElementById('expiringLicences').innerHTML = exp.length ? exp.map(l => createLicenceCard(l)).join('') : '<div class="empty-state"><p>Aucune �?</p></div>';
         }
 
         function planLabel(plan) {
-            return { trial: '⏳ Essai gratuit (40 jours)', standard: '📘 Standard', premium: '🌟 Premium' }[plan] || plan;
+            return { trial: '�?� Essai gratuit (40 jours)', standard: '📘 Standard', premium: '🌟 Premium' }[plan] || plan;
         }
 
         function createLicenceCard(l) {
@@ -615,12 +331,12 @@
                 </div>
                 <div class="card-info">
                     <span>📋 ${l.projectId}</span>
-                    <span>⏳ ${l.joursRestants} jours</span>
+                    <span>�?� ${l.joursRestants} jours</span>
                     <span>📅 ${new Date(l.dateExpiration).toLocaleDateString('fr-FR')}</span>
                 </div>
                 <div class="btn-group">
                     <span class="badge ${l.actif ? 'active' : 'expired'}">${l.actif ? 'Actif' : 'Expiré'}</span>
-                    <button class="btn btn-secondary" onclick="ouvrirEditModal('${l.projectId}')">✏️ Modifier</button>
+                    <button class="btn btn-secondary" onclick="ouvrirEditModal('${l.projectId}')">�?�? Modifier</button>
                 </div>
             </div>`;
         }
@@ -677,7 +393,7 @@
                 document.getElementById('codeValue').textContent = d.code;
                 document.getElementById('generatedCode').style.display = 'block';
                 await chargerDonnees();
-            } catch (e) { alert('❌ ' + e.message); }
+            } catch (e) { alert('�?� ' + e.message); }
         }
 
         function copierCode(el) {
@@ -730,8 +446,8 @@
             const statusEl = document.getElementById('editStatus');
             
             btn.disabled = true;
-            btn.textContent = '⏳ Sauvegarde...';
-            statusEl.innerHTML = '<span style="color:#64B5F6;">⏳ Envoi en cours, patientez...</span>';
+            btn.textContent = '�?� Sauvegarde...';
+            statusEl.innerHTML = '<span style="color:#64B5F6;">�?� Envoi en cours, patientez...</span>';
 
             const payload = {
                 plan: document.getElementById('editPlan').value,
@@ -783,14 +499,16 @@
                 setTimeout(fermerModal, 1500);
 
             } catch (e) {
-                console.error('❌ sauvegarderLicence error:', e);
-                statusEl.innerHTML = '<span style="color:#f44336;">❌ ' + e.message + '</span>';
+                console.error('�?� sauvegarderLicence error:', e);
+                statusEl.innerHTML = '<span style="color:#f44336;">�?� ' + e.message + '</span>';
                 btn.disabled = false;
                 btn.textContent = '🔄 Réessayer';
             }
         }
 
         document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) fermerModal(); });
-    </script>
-</body>
-</html>
+    
+</SCRIPT><BR>
+</P>
+</BODY>
+</HTML>
